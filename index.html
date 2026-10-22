@@ -43,6 +43,10 @@ svg path{stroke:var(--ring);stroke-width:2}svg path.dim{opacity:.25}
 .rbar{display:flex;align-items:center;gap:8px;min-width:0}.rbar .track{flex:1;min-width:0}.rbar .b{min-width:2px}
 .rbar .n{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 .card .row{grid-template-columns:170px 1fr}
+.asks{margin:0;padding-left:24px;display:grid;gap:10px;font-variant-numeric:tabular-nums}
+.asks li{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px;align-items:center}
+.al{font-size:15px}.al small{display:block;color:var(--muted);font-size:12px}
+@media(max-width:520px){.asks li{grid-template-columns:1fr;gap:4px}}
 </style>
 <div class="wrap">
 <h1>Team Flourishing Workshop</h1>
@@ -52,6 +56,7 @@ svg path{stroke:var(--ring);stroke-width:2}svg path.dim{opacity:.25}
 <div class="card"><h2>What Makes It Possible</h2><p class="q">What enables and makes great work possible?</p><div class="pie" id="p-poss"></div></div>
 </div>
 <div class="card cmp"><h2>Side by side</h2><p class="key">Share of notes per theme. Solid bar is best work ever, faded bar is what makes it possible.</p><div id="cmp"></div></div>
+<div class="card cmp"><h2>Top asks</h2><p class="key">The most-reacted ideas from What Makes It Possible, reworded in short.</p><ol class="asks" id="asks"></ol></div>
 <h2 style="margin-top:32px">Emoji reactions</h2>
 <p class="sub">Which themes got the most reactions on the board, measured per note so bigger themes don't win just by having more notes.</p>
 <div class="grid">
@@ -74,7 +79,7 @@ el.innerHTML=`<svg viewBox="0 0 200 200" width="190" height="190" role="img" ari
 ks.map(k=>`<li data-k="${k}" data-s="${s}" class="${sel==k&&F==s?"on":""}"><span class="sw" style="background:var(${T[k][1]})"></span>${T[k][0]}<span class="n">${o[k]} · ${pct(o[k],n)}%</span></li>`).join("")+"</ul>"}
 function cmp(){const b=cnt("best"),p=cnt("poss"),nb=D.best.length,np=D.poss.length,mx=Math.max(...K.map(k=>Math.max(b[k]/nb,p[k]/np)));
 document.getElementById("cmp").innerHTML=K.map(k=>`<div class="row"><div class="lab">${T[k][0]}</div><div class="bars"><div class="b" title="Best work ever: ${pct(b[k],nb)}%" style="width:${b[k]/nb/mx*100}%;background:var(${T[k][1]})"></div><div class="b p" title="What makes it possible: ${pct(p[k],np)}%" style="width:${p[k]/np/mx*100}%;background:var(${T[k][1]})"></div></div></div>`).join("")}
-const RX={"best": {"M": {"🙂": 2, "😍": 9, "❤️": 20, "💯": 6, "👀": 1, "👍": 8, "🔥": 1}, "P": {"❤️": 18, "💯": 19, "👍": 11}, "F": {"👍": 5, "❤️": 17, "💯": 18, "😂": 2, "😍": 2}, "E": {"❤️": 8, "🙏": 7, "💯": 10, "👍": 6, "👀": 2, "😍": 1}, "R": {"❤️": 21, "👍": 5, "💯": 8, "🔥": 3}, "C": {"🤔": 1, "❤️": 12, "👍": 6, "💯": 12}}, "poss": {"R": {"❤️": 22, "🔥": 9, "👍": 3, "💯": 6, "🙏": 3}, "F": {"👍": 11, "🙏": 2, "💯": 8, "❤️": 4}, "C": {"👍": 11, "💯": 17, "❤️": 11, "🙏": 2, "🔥": 3, "😍": 1}, "P": {"❤️": 16, "👍": 8, "💯": 6, "🔥": 3, "👀": 1, "🙏": 1}, "E": {"❤️": 16, "🏆": 3, "👍": 9, "😍": 1}, "M": {"👍": 3}}};
+const RX={"best": {"M": {"🙂": 2, "😍": 9, "❤️": 20, "💯": 6, "👀": 1, "👍": 8, "🔥": 1}, "P": {"❤️": 18, "💯": 19, "👍": 11}, "F": {"👍": 5, "❤️": 17, "💯": 18, "😂": 2, "😍": 2}, "E": {"❤️": 8, "🙏": 7, "💯": 10, "👍": 6, "👀": 2, "😍": 1}, "R": {"❤️": 21, "👍": 5, "💯": 8, "🔥": 3}, "C": {"🤔": 1, "❤️": 12, "👍": 6, "💯": 12}}, "poss": {"R": {"❤️": 24, "👍": 5, "🙏": 3, "🔥": 11, "💯": 7}, "F": {"👍": 13, "🙏": 3, "💯": 9, "❤️": 6}, "C": {"👍": 18, "💯": 20, "❤️": 13, "🙏": 2, "🔥": 5, "😍": 3}, "P": {"❤️": 20, "👍": 9, "💯": 6, "👀": 2, "🔥": 5, "🙏": 1}, "E": {"❤️": 19, "🏆": 3, "👍": 11, "😍": 5}, "M": {"👍": 3}}};
 function rxs(s){const o=cnt(s),r=RX[s]||{},em={};let tot=0;
 const per=K.map(k=>{const t=Object.values(r[k]||{}).reduce((a,b)=>a+b,0);tot+=t;return[k,t,o[k]?t/o[k]:0]}).sort((a,b)=>b[2]-a[2]);
 Object.values(r).forEach(e=>Object.entries(e).forEach(([x,n])=>em[x]=(em[x]||0)+n));
@@ -82,6 +87,8 @@ document.getElementById("rt-"+s).textContent=tot?`${tot} reactions logged`+(s=="
 document.getElementById("re-"+s).innerHTML=Object.entries(em).sort((a,b)=>b[1]-a[1]).map(([x,n])=>`<span class="chip"><span class="ej">${x}</span>${n}</span>`).join("");
 const mx=Math.max(...per.map(p=>p[2]),.01);
 document.getElementById("rb-"+s).innerHTML=tot?per.map(([k,t,a])=>`<div class="row"><div class="lab">${T[k][0]}</div><div class="rbar"><div class="track"><div class="b" style="width:${a/mx*100}%;background:var(${T[k][1]})"></div></div><span class="n">${a.toFixed(1)} per note · ${t}</span></div></div>`).join(""):""}
+const ASKS=[["Everyone understands the product deeply", "C", 7], ["Psychological safety", "E", 7], ["A clear way to settle disagreements", "F", 6], ["Permission to fail, as long as we learn", "E", 6], ["Reliable people don't get stuck with all the leftover work", "F", 6], ["Work matched to strengths and interests", "R", 5], ["Authority to make calls backed by evidence", "R", 5], ["Expectations that fit a normal workweek", "P", 5], ["Trust and respectful collaboration", "F", 5], ["Freedom to try, fail fast and share what we learn", "E", 5]],amx=Math.max(...ASKS.map(a=>a[2]),1);
+document.getElementById("asks").innerHTML=ASKS.map(([l,k,n])=>`<li><span class="al">${l}<small>${T[k][0]}</small></span><span class="rbar"><span class="track"><span class="b" style="display:block;width:${n/amx*100}%;background:var(${T[k][1]})"></span></span><span class="n">${n} reactions</span></span></li>`).join("");
 cmp();pie("best");pie("poss");rxs("best");rxs("poss");
 </script>
 </body></html>
