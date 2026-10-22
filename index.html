@@ -37,6 +37,12 @@ svg path{stroke:var(--ring);stroke-width:2}svg path.dim{opacity:.25}
 .key{font-size:13px;color:var(--muted);margin:0 0 8px}
 .foot{color:var(--muted);font-size:12px;margin-top:32px}
 @media(max-width:520px){.row{grid-template-columns:1fr;gap:2px}}
+.emo{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.chip{display:inline-flex;gap:4px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:13px;font-variant-numeric:tabular-nums}
+.ej{font-size:15px}
+.rbar{display:flex;align-items:center;gap:8px;min-width:0}.rbar .b{flex:none;min-width:2px}
+.rbar .n{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.card .row{grid-template-columns:170px 1fr}
 </style>
 <div class="wrap">
 <h1>Team Flourishing Workshop</h1>
@@ -46,6 +52,12 @@ svg path{stroke:var(--ring);stroke-width:2}svg path.dim{opacity:.25}
 <div class="card"><h2>What Makes It Possible</h2><p class="q">What enables and makes great work possible?</p><div class="pie" id="p-poss"></div></div>
 </div>
 <div class="card cmp"><h2>Side by side</h2><p class="key">Share of notes per theme. Solid bar is best work ever, faded bar is what makes it possible.</p><div id="cmp"></div></div>
+<h2 style="margin-top:32px">Emoji reactions</h2>
+<p class="sub">Which themes got the most reactions on the board, measured per note so bigger themes don't win just by having more notes.</p>
+<div class="grid">
+<div class="card"><h2>Best Work Ever</h2><p class="q" id="rt-best"></p><div class="emo" id="re-best"></div><div id="rb-best"></div></div>
+<div class="card"><h2>What Makes It Possible</h2><p class="q" id="rt-poss"></p><div class="emo" id="re-poss"></div><div id="rb-poss"></div></div>
+</div>
 <p class="foot">Each note was sorted into one theme by reading it, and some could fit more than one. The Values, Shared Norm and Flexible Personal Need rows were still empty on the board.</p>
 </div>
 <script>
@@ -62,6 +74,14 @@ el.innerHTML=`<svg viewBox="0 0 200 200" width="190" height="190" role="img" ari
 ks.map(k=>`<li data-k="${k}" data-s="${s}" class="${sel==k&&F==s?"on":""}"><span class="sw" style="background:var(${T[k][1]})"></span>${T[k][0]}<span class="n">${o[k]} · ${pct(o[k],n)}%</span></li>`).join("")+"</ul>"}
 function cmp(){const b=cnt("best"),p=cnt("poss"),nb=D.best.length,np=D.poss.length,mx=Math.max(...K.map(k=>Math.max(b[k]/nb,p[k]/np)));
 document.getElementById("cmp").innerHTML=K.map(k=>`<div class="row"><div class="lab">${T[k][0]}</div><div class="bars"><div class="b" title="Best work ever: ${pct(b[k],nb)}%" style="width:${b[k]/nb/mx*100}%;background:var(${T[k][1]})"></div><div class="b p" title="What makes it possible: ${pct(p[k],np)}%" style="width:${p[k]/np/mx*100}%;background:var(${T[k][1]})"></div></div></div>`).join("")}
-cmp();pie("best");pie("poss");
+const RX={"best": {"M": {"🙂": 2, "😍": 6, "❤️": 18, "💯": 5, "👀": 1, "👍": 3, "🔥": 1}, "P": {"❤️": 18, "💯": 18, "👍": 9}, "F": {"👍": 5, "❤️": 13, "💯": 12, "😂": 2, "😍": 1}, "E": {"❤️": 9, "🙏": 6, "💯": 11, "👍": 6, "👀": 2}, "R": {"❤️": 17, "👍": 3, "💯": 3, "🔥": 1}, "C": {"🤔": 1, "❤️": 11, "👍": 6, "💯": 10}}, "poss": {"R": {"❤️": 11, "🔥": 4, "💯": 1, "👍": 1}, "F": {"👍": 4, "🙏": 1, "💯": 4, "❤️": 1}, "C": {"👍": 1, "💯": 8, "❤️": 6}, "P": {"❤️": 5, "👍": 4, "💯": 1, "🔥": 1}, "E": {"❤️": 6, "🏆": 1}, "M": {"👍": 2}}};
+function rxs(s){const o=cnt(s),r=RX[s]||{},em={};let tot=0;
+const per=K.map(k=>{const t=Object.values(r[k]||{}).reduce((a,b)=>a+b,0);tot+=t;return[k,t,o[k]?t/o[k]:0]}).sort((a,b)=>b[2]-a[2]);
+Object.values(r).forEach(e=>Object.entries(e).forEach(([x,n])=>em[x]=(em[x]||0)+n));
+document.getElementById("rt-"+s).textContent=tot?`${tot} reactions logged`+(s=="poss"?" so far (still being logged)":""):"No reactions logged yet";
+document.getElementById("re-"+s).innerHTML=Object.entries(em).sort((a,b)=>b[1]-a[1]).map(([x,n])=>`<span class="chip"><span class="ej">${x}</span>${n}</span>`).join("");
+const mx=Math.max(...per.map(p=>p[2]),.01);
+document.getElementById("rb-"+s).innerHTML=tot?per.map(([k,t,a])=>`<div class="row"><div class="lab">${T[k][0]}</div><div class="rbar"><div class="b" style="width:${a/mx*100}%;background:var(${T[k][1]})"></div><span class="n">${a.toFixed(1)} per note · ${t}</span></div></div>`).join(""):""}
+cmp();pie("best");pie("poss");rxs("best");rxs("poss");
 </script>
 </body></html>
